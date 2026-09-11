@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Folio — Library Management</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1D2A38;
+    --navy-light:#2A3B4D;
+    --navy-lighter:#33465B;
+    --paper:#FAF6EE;
+    --paper-deep:#F1EAD9;
+    --card:#FFFFFF;
+    --ink:#29241D;
+    --ink-soft:#726A5B;
+    --oak:#A2703F;
+    --oak-dark:#8A5C31;
+    --sage:#5E7D63;
+    --sage-bg:#E7EEE4;
+    --rose:#B0503C;
+    --rose-bg:#F3E2DC;
+    --border:#E3D9C4;
+    --radius:10px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Inter', sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    display:flex;
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+  h1,h2,h3,.brand{font-family:'Fraunces', serif;}
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{
+    width:236px;
+    flex-shrink:0;
+    background:var(--navy);
+    color:var(--paper);
+    height:100vh;
+    position:sticky;
+    top:0;
+    display:flex;
+    flex-direction:column;
+    padding:26px 0;
+  }
+  .brand{
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+    padding:0 24px 26px 24px;
+    border-bottom:1px solid rgba(250,246,238,0.1);
+    margin-bottom:18px;
+  }
+  .brand-mark{
+    font-size:22px;
+    font-weight:600;
+    font-style:italic;
+    color:var(--paper);
+  }
+  .brand-sub{
+    font-family:'Inter',sans-serif;
+    font-size:11px;
+    color:#8FA0B0;
+    letter-spacing:0.02em;
+  }
+  .nav-group{padding:0 12px;}
+  .nav-label{
+    font-size:11px;
+    color:#7E90A1;
+    padding:14px 12px 6px 12px;
+    letter-spacing:0.02em;
+  }
+  .nav-item{
+    display:flex;
+    align-items:center;
+    gap:11px;
+    width:100%;
+    padding:9px 12px;
+    border:none;
+    background:transparent;
+    color:#D4DCE3;
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    border-radius:8px;
+    cursor:pointer;
+    text-align:left;
+    transition:background 0.15s ease, color 0.15s ease;
+  }
+  .nav-item svg{width:17px; height:17px; flex-shrink:0; opacity:0.85;}
+  .nav-item:hover{background:var(--navy-light); color:#fff;}
+  .nav-item.active{background:var(--oak); color:#fff;}
+  .nav-item.active svg{opacity:1;}
+  .sidebar-foot{
+    margin-top:auto;
+    padding:14px 12px 0 12px;
+    border-top:1px solid rgba(250,246,238,0.1);
+  }
+
+  /* ---------- Main ---------- */
+  .main{
+    flex:1;
+    min-width:0;
+    padding:34px 42px;
+  }
+  .page{display:none;}
+  .page.active{display:block; animation:rise 0.35s ease;}
+  #keyframes rise{
+    from{opacity:0; transform:translateY(6px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+  .page-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    margin-bottom:26px;
+  }
+  .page-head h1{font-size:28px; font-weight:500; color:var(--navy);}
+  .page-head p{color:var(--ink-soft); font-size:14px; margin-top:4px;}
+  .btn{
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    font-weight:600;
+    padding:10px 18px;
+    border-radius:8px;
+    border:none;
+    cursor:pointer;
+    transition:background 0.15s ease, transform 0.1s ease;
+  }
+  .btn-oak{background:var(--oak); color:#fff;}
+  .btn-oak:hover{background:var(--oak-dark);}
+  .btn-ghost{background:transparent; color:var(--navy); border:1px solid var(--border);}
+  .btn-ghost:hover{background:var(--paper-deep);}
+
+  /* stat cards */
+  .stat-row{display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:30px;}
+  .stat-card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:18px 20px;
+  }
+  .stat-card .num{font-family:'Fraunces',serif; font-size:30px; color:var(--navy);}
+  .stat-card .lbl{font-size:13px; color:var(--ink-soft); margin-top:2px;}
+
+  /* table */
+  .panel{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    overflow:hidden;
+  }
+  table{width:100%; border-collapse:collapse;}
+  thead th{
+    text-align:left;
+    font-size:12px;
+    text-transform:none;
+    color:var(--ink-soft);
+    font-weight:600;
+    padding:13px 20px;
+    background:var(--paper-deep);
+    border-bottom:1px solid var(--border);
+  }
+  tbody td{
+    padding:13px 20px;
+    font-size:14px;
+    border-bottom:1px solid var(--border);
+    color:var(--ink);
+  }
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:#FCFAF4;}
+  .badge{
+    display:inline-block;
+    font-size:12px;
+    font-weight:600;
+    padding:3px 10px;
+    border-radius:99px;
+  }
+  .badge-sage{background:var(--sage-bg); color:var(--sage);}
+  .badge-oak{background:#F1E4D4; color:var(--oak-dark);}
+  .badge-rose{background:var(--rose-bg); color:var(--rose);}
+
+  /* card grid (authors/categories/reviews) */
+  .grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
+  .info-card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:18px 20px;
+  }
+  .info-card h3{font-size:16px; font-weight:500; color:var(--navy); margin-bottom:6px;}
+  .info-card p{font-size:13.5px; color:var(--ink-soft); line-height:1.5;}
+  .info-card .meta{font-size:12px; color:var(--oak-dark); margin-top:10px; font-weight:600;}
+  .stars{color:var(--oak); letter-spacing:1px; font-size:13px;}
+
+  /* ---------- Auth page ---------- */
+  #page-auth.page{padding:0; margin:-34px -42px; min-height:calc(100vh);}
+  .auth-wrap{
+    display:flex;
+    min-height:100vh;
+  }
+  .auth-brand{
+    flex:1.1;
+    background:var(--navy);
+    color:var(--paper);
+    padding:60px;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    position:relative;
+    overflow:hidden;
+  }
+  .auth-brand h2{
+    font-size:40px;
+    font-weight:500;
+    font-style:italic;
+    line-height:1.25;
+    max-width:420px;
+  }
+  .auth-brand .quote-attr{margin-top:16px; color:#93A4B4; font-size:13px;}
+  .shelf{
+    position:absolute;
+    bottom:-40px;
+    right:-30px;
+    opacity:0.55;
+  }
+  .auth-right{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    padding:60px 8% 60px 60px;
+  }
+  .auth-card{
+    width:100%;
+    max-width:380px;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:34px 32px;
+    box-shadow:0 20px 40px -20px rgba(29,42,56,0.18);
+  }
+  .auth-tabs{
+    display:flex;
+    background:var(--paper-deep);
+    border-radius:9px;
+    padding:3px;
+    margin-bottom:26px;
+  }
+  .auth-tab{
+    flex:1;
+    text-align:center;
+    padding:8px 0;
+    font-size:13.5px;
+    font-weight:600;
+    color:var(--ink-soft);
+    background:transparent;
+    border:none;
+    border-radius:7px;
+    cursor:pointer;
+    transition:background 0.15s ease, color 0.15s ease;
+  }
+  .auth-tab.active{background:#fff; color:var(--navy); box-shadow:0 1px 3px rgba(0,0,0,0.08);}
+  .auth-form{display:none; flex-direction:column; gap:14px;}
+  .auth-form.active{display:flex;}
+  .field label{
+    display:block;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--ink-soft);
+    margin-bottom:5px;
+  }
+  .field input{
+    width:100%;
+    padding:10px 12px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    background:var(--paper);
+    color:var(--ink);
+    outline:none;
+    transition:border-color 0.15s ease;
+  }
+  .field input:focus{border-color:var(--oak);}
+  .auth-submit{margin-top:6px; width:100%; padding:11px 0;}
+  .auth-foot{
+    text-align:center;
+    font-size:13px;
+    color:var(--ink-soft);
+    margin-top:18px;
+  }
+  .auth-foot a{color:var(--oak-dark); font-weight:600; text-decoration:none; cursor:pointer;}
+</style>
+</head>
+<body>
+
+  <!-- ================= SIDEBAR ================= -->
+  <nav class="sidebar">
+    <div class="brand">
+      <span class="brand-mark">Folio</span>
+      <span class="brand-sub">Library</span>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-label">Overview</div>
+      <button class="nav-item active" data-page="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+        Dashboard
+      </button>
+
+      <div class="nav-label">Catalog</div>
+      <button class="nav-item" data-page="books">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        Books
+      </button>
+      <button class="nav-item" data-page="authors">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+        Authors
+      </button>
+      <button class="nav-item" data-page="categories">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.6 12.6 12.6 20.6a2 2 0 0 1-2.8 0L2 12.8V3h9.8l8.8 8.8a2 2 0 0 1 0 2.8Z"/><circle cx="7" cy="7.5" r="1.2" fill="currentColor" stroke="none"/></svg>
+        Categories
+      </button>
+
+      <div class="nav-label">People</div>
+      <button class="nav-item" data-page="members">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Members
+      </button>
+
+      <div class="nav-label">Circulation</div>
+      <button class="nav-item" data-page="loans">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 2 21 6l-4 4"/><path d="M3 12v-1a4 4 0 0 1 4-4h14"/><path d="M7 22 3 18l4-4"/><path d="M21 12v1a4 4 0 0 1-4 4H3"/></svg>
+        Loans
+      </button>
+      <button class="nav-item" data-page="reservations">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M19 21 12 16.5 5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+        Reservations
+      </button>
+      <button class="nav-item" data-page="fines">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5c0-1.4 1.1-2.3 2.5-2.3s2.5.8 2.5 2c0 2.5-5 1.6-5 4.1 0 1.2 1.1 2.2 2.5 2.2s2.5-.9 2.5-2.3"/></svg>
+        Fines
+      </button>
+      <button class="nav-item" data-page="reviews">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m12 2 3.1 6.6 7.2.9-5.3 5 1.4 7.2L12 18.3 5.6 21.7 7 14.5 1.7 9.5l7.2-.9z"/></svg>
+        Reviews
+      </button>
+    </div>
+
+    <div class="sidebar-foot">
+      <button class="nav-item" data-page="auth">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/></svg>
+        Sign in / Sign up
+      </button>
+    </div>
+  </nav>
+
+  <!-- ================= MAIN ================= -->
+  <main class="main">
+
+    <!-- ---- Dashboard ---- -->
+    <section class="page active" id="page-dashboard">
+      <div class="page-head">
+        <div>
+          <h1>Good afternoon, Librarian</h1>
+          <p>Here's what's happening across the shelves today.</p>
+        </div>
+        <button class="btn btn-oak" onclick="showPage('books')">+ Add a book</button>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat-card"><div class="num">1,248</div><div class="lbl">Books in catalog</div></div>
+        <div class="stat-card"><div class="num">96</div><div class="lbl">Loans active</div></div>
+        <div class="stat-card"><div class="num">412</div><div class="lbl">Members</div></div>
+        <div class="stat-card"><div class="num">7</div><div class="lbl">Fines unpaid</div></div>
+      </div>
+
+      <div class="panel">
+        <table>
+          <thead><tr><th>Book</th><th>Member</th><th>Due date</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>The Quiet Ledger</td><td>mahmoud_h</td><td>Sep 12, 2026</td><td><span class="badge badge-oak">Due soon</span></td></tr>
+            <tr><td>Notes on Distant Stars</td><td>salma.k</td><td>Sep 9, 2026</td><td><span class="badge badge-rose">Overdue</span></td></tr>
+            <tr><td>A Short History of Salt</td><td>youssef92</td><td>Sep 18, 2026</td><td><span class="badge badge-sage">On track</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ---- Books ---- -->
+    <section class="page" id="page-books">
+      <div class="page-head">
+        <div><h1>Books</h1><p>Every title in the collection, across all categories.</p></div>
+        <button class="btn btn-oak">+ Add book</button>
+      </div>
+      <div class="panel">
+        <table>
+          <thead><tr><th>Title</th><th>Author</th><th>Category</th><th>ISBN</th><th>Year</th><th>Copies</th></tr></thead>
+          <tbody>
+            <tr><td>The Quiet Ledger</td><td>Amina Rostami</td><td>Business</td><td>978-1-2345-6</td><td>2021</td><td>3 / 4</td></tr>
+            <tr><td>Notes on Distant Stars</td><td>Karim El-Sayed</td><td>Science</td><td>978-1-2345-7</td><td>2019</td><td>1 / 2</td></tr>
+            <tr><td>A Short History of Salt</td><td>Nour Hassan</td><td>History</td><td>978-1-2345-8</td><td>2016</td><td>5 / 5</td></tr>
+            <tr><td>The Cartographer's Dream</td><td>Layla Fahmy</td><td>Fantasy</td><td>978-1-2345-9</td><td>2023</td><td>2 / 3</td></tr>
+            <tr><td>Debugging Yourself</td><td>Omar Zaki</td><td>Self Development</td><td>978-1-2346-0</td><td>2022</td><td>4 / 4</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ---- Authors ---- -->
+    <section class="page" id="page-authors">
+      <div class="page-head">
+        <div><h1>Authors</h1><p>Writers represented in the collection.</p></div>
+        <button class="btn btn-oak">+ Add author</button>
+      </div>
+      <div class="grid">
+        <div class="info-card"><h3>Amina Rostami</h3><p>Writes on markets, negotiation, and the quiet mechanics of trust in business.</p><div class="meta">6 books</div></div>
+        <div class="info-card"><h3>Karim El-Sayed</h3><p>Astrophysicist turned essayist, translating the sky into plain language.</p><div class="meta">3 books</div></div>
+        <div class="info-card"><h3>Nour Hassan</h3><p>Historian focused on everyday objects and the stories they carry.</p><div class="meta">4 books</div></div>
+      </div>
+    </section>
+
+    <!-- ---- Categories ---- -->
+    <section class="page" id="page-categories">
+      <div class="page-head">
+        <div><h1>Categories</h1><p>How the catalog is organized.</p></div>
+        <button class="btn btn-oak">+ Add category</button>
+      </div>
+      <div class="grid">
+        <div class="info-card"><h3>Programming</h3><p>Software, languages, and the craft of building things.</p><div class="meta">142 books</div></div>
+        <div class="info-card"><h3>Science</h3><p>Physics, biology, and the natural world.</p><div class="meta">98 books</div></div>
+        <div class="info-card"><h3>History</h3><p>People, places, and how we got here.</p><div class="meta">76 books</div></div>
+        <div class="info-card"><h3>Literature</h3><p>Fiction, poetry, and essays.</p><div class="meta">210 books</div></div>
+        <div class="info-card"><h3>Self Development</h3><p>Habits, focus, and personal growth.</p><div class="meta">64 books</div></div>
+        <div class="info-card"><h3>Business</h3><p>Strategy, markets, and management.</p><div class="meta">88 books</div></div>
+        <div class="info-card"><h3>Fantasy</h3><p>Other worlds and the rules that govern them.</p><div class="meta">130 books</div></div>
+        <div class="info-card"><h3>Mystery</h3><p>Puzzles, detectives, and slow reveals.</p><div class="meta">72 books</div></div>
+      </div>
+    </section>
+
+    <!-- ---- Members ---- -->
+    <section class="page" id="page-members">
+      <div class="page-head">
+        <div><h1>Members</h1><p>Everyone registered with the library.</p></div>
+        <button class="btn btn-oak">+ Add member</button>
+      </div>
+      <div class="panel">
+        <table>
+          <thead><tr><th>Username</th><th>Email</th><th>Role</th><th>Membership expires</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>mahmoud_h</td><td>mahmoud.h@mail.com</td><td>Member</td><td>Jan 4, 2027</td><td><span class="badge badge-sage">Active</span></td></tr>
+            <tr><td>salma.k</td><td>salma.k@mail.com</td><td>Member</td><td>Nov 20, 2026</td><td><span class="badge badge-sage">Active</span></td></tr>
+            <tr><td>admin.reem</td><td>reem@folio.lib</td><td>Admin</td><td>—</td><td><span class="badge badge-sage">Active</span></td></tr>
+            <tr><td>youssef92</td><td>youssef92@mail.com</td><td>Member</td><td>Aug 30, 2026</td><td><span class="badge badge-rose">Blocked</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ---- Loans ---- -->
+    <section class="page" id="page-loans">
+      <div class="page-head">
+        <div><h1>Loans</h1><p>Active and past borrowing history.</p></div>
+        <button class="btn btn-oak">+ New loan</button>
+      </div>
+      <div class="panel">
+        <table>
+          <thead><tr><th>Book</th><th>Member</th><th>Borrowed</th><th>Due</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>The Quiet Ledger</td><td>mahmoud_h</td><td>Aug 29, 2026</td><td>Sep 12, 2026</td><td><span class="badge badge-oak">Active</span></td></tr>
+            <tr><td>Notes on Distant Stars</td><td>salma.k</td><td>Aug 25, 2026</td><td>Sep 9, 2026</td><td><span class="badge badge-rose">Overdue</span></td></tr>
+            <tr><td>Debugging Yourself</td><td>youssef92</td><td>Jul 30, 2026</td><td>Aug 13, 2026</td><td><span class="badge badge-sage">Returned</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ---- Reservations ---- -->
+    <section class="page" id="page-reservations">
+      <div class="page-head">
+        <div><h1>Reservations</h1><p>Members waiting on a title that's currently out.</p></div>
+        <button class="btn btn-oak">+ New reservation</button>
+      </div>
+      <div class="panel">
+        <table>
+          <thead><tr><th>Book</th><th>Member</th><th>Reserved on</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>The Cartographer's Dream</td><td>salma.k</td><td>Sep 5, 2026</td><td><span class="badge badge-oak">Waiting</span></td></tr>
+            <tr><td>A Short History of Salt</td><td>mahmoud_h</td><td>Sep 1, 2026</td><td><span class="badge badge-sage">Ready for pickup</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ---- Fines ---- -->
+    <section class="page" id="page-fines">
+      <div class="page-head">
+        <div><h1>Fines</h1><p>Outstanding and settled charges.</p></div>
+      </div>
+      <div class="panel">
+        <table>
+          <thead><tr><th>Member</th><th>Loan</th><th>Amount</th><th>Issued</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>salma.k</td><td>Notes on Distant Stars</td><td>EGP 15.00</td><td>Sep 10, 2026</td><td><span class="badge badge-rose">Unpaid</span></td></tr>
+            <tr><td>youssef92</td><td>Debugging Yourself</td><td>EGP 30.00</td><td>Aug 14, 2026</td><td><span class="badge badge-sage">Paid</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ---- Reviews ---- -->
+    <section class="page" id="page-reviews">
+      <div class="page-head">
+        <div><h1>Reviews</h1><p>What members are saying about the collection.</p></div>
+      </div>
+      <div class="grid">
+        <div class="info-card"><div class="stars">★★★★★</div><h3 style="margin-top:8px;">The Quiet Ledger</h3><p>"Made a subject I usually avoid feel completely readable." — mahmoud_h</p></div>
+        <div class="info-card"><div class="stars">★★★★☆</div><h3 style="margin-top:8px;">A Short History of Salt</h3><p>"Slow start, but the last third is worth it." — youssef92</p></div>
+        <div class="info-card"><div class="stars">★★★☆☆</div><h3 style="margin-top:8px;">Notes on Distant Stars</h3><p>"Dense in places, but I learned a lot." — salma.k</p></div>
+      </div>
+    </section>
+
+    <!-- ---- Auth (Login / Sign up) ---- -->
+    <section class="page" id="page-auth">
+      <div class="auth-wrap">
+        <div class="auth-brand">
+          <div>
+            <span class="brand-mark" style="font-size:26px;">Folio</span>
+          </div>
+          <div>
+            <h2>A library is a record of what a place decided was worth keeping.</h2>
+            <div class="quote-attr">— from the front desk</div>
+          </div>
+        </div>
+
+        <div class="auth-right">
+          <div class="auth-card">
+            <div class="auth-tabs">
+              <button class="auth-tab active" onclick="showAuthForm('login')">Sign in</button>
+              <button class="auth-tab" onclick="showAuthForm('signup')">Sign up</button>
+            </div>
+
+            <form class="auth-form active" id="form-login" onsubmit="return false;">
+              <div class="field"><label>Email</label><input type="email" placeholder="you@mail.com" /></div>
+              <div class="field"><label>Password</label><input type="password" placeholder="••••••••" /></div>
+              <button class="btn btn-oak auth-submit" type="submit">Sign in</button>
+              <div class="auth-foot">New here? <a onclick="showAuthForm('signup')">Create an account</a></div>
+            </form>
+
+            <form class="auth-form" id="form-signup" onsubmit="return false;">
+              <div class="field"><label>Username</label><input type="text" placeholder="yourname" /></div>
+              <div class="field"><label>Email</label><input type="email" placeholder="you@mail.com" /></div>
+              <div class="field"><label>Phone number</label><input type="tel" placeholder="01xxxxxxxxx" /></div>
+              <div class="field"><label>Password</label><input type="password" placeholder="••••••••" /></div>
+              <button class="btn btn-oak auth-submit" type="submit">Create account</button>
+              <div class="auth-foot">Already a member? <a onclick="showAuthForm('login')">Sign in</a></div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+        @RenderBody()
+  </main>
+
+<script>
+  function showPage(id){
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + id).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    const btn = document.querySelector('.nav-item[data-page="' + id + '"]');
+    if(btn) btn.classList.add('active');
+  }
+  document.querySelectorAll('.nav-item[data-page]').forEach(btn=>{
+    btn.addEventListener('click', ()=> showPage(btn.dataset.page));
+  });
+
+  function showAuthForm(which){
+    document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+    document.getElementById('form-' + which).classList.add('active');
+    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.auth-tab')[which === 'login' ? 0 : 1].classList.add('active');
+  }
+</script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
