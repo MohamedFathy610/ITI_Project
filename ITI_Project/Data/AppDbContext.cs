@@ -1,4 +1,4 @@
-﻿using ITI_Project.Model;
+﻿using ITI_Project.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace ITI_Project.Data
